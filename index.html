@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>UnPause Vote</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; background: #eee; }
+      form button {background: rgb(130, 224, 255); border: none; padding: 50px; }
+      .vote-play {background: rgb(100, 250, 100);}
+      .vote-pause {background: rgb(250, 100, 100);}
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form-play" action="">
+      <button id="vote-play" class="vote-play">Vote to Play</button>
+    </form>
+
+    <form id="form-pause" action="">
+      <button id="vote-pause" class="vote-pause" style="display: none">Vote to Pause</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      $('#form-pause').submit(function(){
+        $('#vote-pause').hide();
+        $('#vote-play').show();
+        socket.emit('vote-pause');
+        return false;
+      });
+      $('#form-play').submit(function(){
+        $('#vote-play').hide();
+        $('#vote-pause').show();
+        socket.emit('vote-play');
+        return false;
+      });
+
+      socket.on('pause', function(states){
+        $('#vote-pause').hide();
+        $('#vote-play').show();
+      });
+    </script>
+  </body>
+</html>

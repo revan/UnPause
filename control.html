@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <title>UnPause Control</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; background: #aaa;}
+      form button {background: rgb(130, 224, 255); border: none; padding: 50px; }
+      .vote-play {background: rgb(100, 250, 100);}
+      .vote-pause {background: rgb(250, 100, 100);}
+    </style>
+  </head>
+  <body>
+    <ul id="status"></ul>
+    
+
+    <form id="form-pause" action="">
+      <button id="pause">Force Pause</button>
+    </form>
+
+    <ul id="stateVis"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      // remove controllers from state array.
+      socket.emit('exempt', null);
+
+      $('#form-pause').submit(function(){
+        
+        socket.emit('pause');
+        return false;
+      });
+
+
+      var stateEnum = Object.freeze({
+        NEW: 0,
+        PAUSE: 1,
+        PLAY: 2});
+
+      var statesCache = {};
+      var drawStates = function() {
+        console.log(statesCache);
+        $('#stateVis').empty();
+        for (var key in statesCache) {
+          if (statesCache[key] == stateEnum.PAUSE) {
+            $('#stateVis').append($('<li class="vote-pause">').text("Vote Pause"));
+          } else if (statesCache[key] == stateEnum.PLAY) {
+           $('#stateVis').append($('<li class="vote-play">').text("Vote Play"));
+          } else {
+            $('#stateVis').append($('<li>').text("No Vote"));
+          }
+        }
+      }
+
+      socket.on('init', function(states){
+        statesCache = states;
+        drawStates();
+      });
+      socket.on('pause', function(states){
+        statesCache = states;
+        drawStates();
+      });
+
+      socket.on('vote-pause', function(id){
+        statesCache[id] = stateEnum.PAUSE;
+        drawStates();
+      });
+      socket.on('vote-play', function(id){
+        statesCache[id] = stateEnum.PLAY;
+        drawStates();
+      });
+      socket.on('disco', function(id){
+        delete statesCache[id];
+        drawStates();
+      });
+    </script>
+  </body>
+</html>
